@@ -54,8 +54,9 @@ class FileStorage:
         """Delete obj from __objects if it's inside"""
         if obj:
             key = f"{type(obj).__name__}.{obj.id}"
-            if key in self.__objects:
-                del self.__objects[key]
+            if key in FileStorage.__objects:
+                del FileStorage.__objects[key]
+
 
 if not os.path.exists("file.json"):
     with open("file.json", "w") as f:

@@ -1,8 +1,13 @@
 #!/usr/bin/python3
 """DBStorage engine for hbnb clone using MySQL"""
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session
+try:
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker, scoped_session
+    sqlalchemy_available = True
+except ImportError:
+    sqlalchemy_available = False
+
 from os import getenv
 
 
@@ -18,10 +23,21 @@ class DBStorage:
         pwd = getenv("HBNB_MYSQL_PWD")
         host = getenv("HBNB_MYSQL_HOST")
         db = getenv("HBNB_MYSQL_DB")
-        self.__engine = create_engine(f'mysql+mysqldb://{user}:{pwd}@{host}/{db}',
-                                      pool_pre_ping=True)
-        self.__session = scoped_session(sessionmaker(bind=self.__engine))
         self.__objects = {}
+        
+        # Only initialize engine if all environment variables are set and sqlalchemy is available
+        if sqlalchemy_available and user and pwd and host and db:
+            try:
+                self.__engine = create_engine(f'mysql+mysqldb://{user}:{pwd}@{host}/{db}',
+                                              pool_pre_ping=True)
+                self.__session = scoped_session(sessionmaker(bind=self.__engine))
+            except Exception:
+                # If connection fails, just use in-memory storage
+                self.__engine = None
+                self.__session = None
+        else:
+            self.__engine = None
+            self.__session = None
 
     def all(self, cls=None):
         """Return a dictionary of all objects of class cls"""
