@@ -55,8 +55,13 @@ class test_basemodel(unittest.TestCase):
         i = self.value()
         i.save()
         key = self.name + "." + i.id
+        # Ensure file exists before trying to read it
+        import time
+        time.sleep(0.01)  # Small delay to ensure file write
+        self.assertTrue(os.path.exists('file.json'), "file.json was not created by save()")
         with open('file.json', 'r') as f:
             j = json.load(f)
+            self.assertIn(key, j, f"Object {key} not found in file.json")
             self.assertEqual(j[key], i.to_dict())
 
     def test_str(self):
