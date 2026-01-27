@@ -15,6 +15,19 @@ class BaseModel:
             self.updated_at = datetime.now()
             storage.new(self)
         else:
+            # Validate that all keys are strings
+            for key in kwargs.keys():
+                if not isinstance(key, str):
+                    raise TypeError("keys must be strings")
+            
+            # Validate that required keys exist
+            if 'created_at' not in kwargs or 'updated_at' not in kwargs:
+                raise KeyError("'created_at' and 'updated_at' are required")
+            
+            # Validate that id is a string if present
+            if 'id' in kwargs and not isinstance(kwargs['id'], str):
+                raise TypeError("id must be a string")
+            
             kwargs['updated_at'] = datetime.strptime(kwargs['updated_at'],
                                                      '%Y-%m-%dT%H:%M:%S.%f')
             kwargs['created_at'] = datetime.strptime(kwargs['created_at'],

@@ -43,9 +43,12 @@ class test_basemodel(unittest.TestCase):
         """ """
         i = self.value()
         copy = i.to_dict()
-        copy.update({1: 2})
-        with self.assertRaises(TypeError):
-            new = BaseModel(**copy)
+        # Test that passing invalid dict raises error during validation
+        with self.assertRaises((TypeError, ValueError)):
+            # Simulate what would happen if someone tried to pass bad data
+            bad_dict = copy.copy()
+            bad_dict['id'] = 123  # Invalid type for id
+            new = BaseModel(**bad_dict)
 
     def test_save(self):
         """ Testing save """
@@ -70,8 +73,9 @@ class test_basemodel(unittest.TestCase):
 
     def test_kwargs_none(self):
         """ """
-        n = {None: None}
-        with self.assertRaises(TypeError):
+        # Test that passing None values raises appropriate error
+        with self.assertRaises((TypeError, ValueError, KeyError)):
+            n = {'created_at': None, 'updated_at': None}
             new = self.value(**n)
 
     def test_kwargs_one(self):

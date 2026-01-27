@@ -6,12 +6,15 @@ import os
 
 class FileStorage:
     """This class manages storage of hbnb models in JSON format"""
-    __file_path = 'file.json'
-    __objects = {}
+    
+    def __init__(self):
+        """Initialize FileStorage with instance variables"""
+        self.__file_path = 'file.json'
+        self.__objects = {}
 
     def all(self):
         """Returns a dictionary of models currently in storage"""
-        return FileStorage.__objects
+        return self.__objects
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
@@ -19,9 +22,9 @@ class FileStorage:
 
     def save(self):
         """Saves storage dictionary to file"""
-        with open(FileStorage.__file_path, 'w') as f:
+        with open(self.__file_path, 'w') as f:
             temp = {}
-            temp.update(FileStorage.__objects)
+            temp.update(self.__objects)
             for key, val in temp.items():
                 temp[key] = val.to_dict()
             json.dump(temp, f)
@@ -43,7 +46,7 @@ class FileStorage:
                   }
         try:
             temp = {}
-            with open(FileStorage.__file_path, 'r') as f:
+            with open(self.__file_path, 'r') as f:
                 temp = json.load(f)
                 for key, val in temp.items():
                         self.all()[key] = classes[val['__class__']](**val)
@@ -54,10 +57,5 @@ class FileStorage:
         """Delete obj from __objects if it's inside"""
         if obj:
             key = f"{type(obj).__name__}.{obj.id}"
-            if key in FileStorage.__objects:
-                del FileStorage.__objects[key]
-
-
-if not os.path.exists("file.json"):
-    with open("file.json", "w") as f:
-        json.dump({}, f, indent=4)
+            if key in self.__objects:
+                del self.__objects[key]
