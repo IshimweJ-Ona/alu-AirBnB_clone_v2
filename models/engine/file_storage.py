@@ -28,9 +28,17 @@ class FileStorage:
         'Review': Review
     }
 
-    def all(self):
-        """Returns a dictionary of models currently in storage"""
-        return self.__objects
+    def all(self, cls=None):
+        """
+        Returns a dictionary of models currently in storage
+        If cls is provided, return only objects of that class.
+        """
+        if cls is None:
+            return self.__objects
+        # Filter objects by class
+        cls_name = cls.__name__ if isinstance(cls, type) else cls
+        filtered_objects = {k: v for k, v in self.__objects.items() if type(v).__name__ == cls_name}
+        return filtered_objects
     
     def new(self, obj):
         """Adds new object to storage dictionary"""
