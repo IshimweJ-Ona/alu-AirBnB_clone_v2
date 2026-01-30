@@ -92,12 +92,63 @@ class HBNBCommand(cmd.Cmd):
         if not args:
             print("** class name missing **")
             return
-        if args not in HBNBCommand.classes:
+
+        args_list = args.split()
+        cls_name = args_list[0]
+
+        if cls_name not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-        new_instance = HBNBCommand.classes[args]()
-        storage.new(new_instance)
-        storage.save()
+
+        cls = HBNBCommand.classes[cls_name]
+        params = args_list[1:]
+        kwargs = {}
+
+        for param in params:
+            if "=" not in param:
+                continue
+
+            key, value = param.split("=", 1)
+
+            # only set attributes that exist on the class
+            if not hasattr(cls, key):
+                continue
+
+            try:
+                # Quoted string value
+                if value.startswith('"') and value.endswith('"'):
+                    val = value[1:-1]
+                    val = val.replace('\\"', '"')
+                    val = val.replace("_", " ")
+                else:
+                    # determine expected type from class default
+                    default = getattr(cls, key)
+                    if isinstance(default, int):
+                        val = int(value)
+                    elif isinstance(default, float):
+                        val = float(value)
+                    elif isinstance(default, str):
+                        val = value.replace("_", " ")
+                    else:
+                        # fallback: try int, then float, else use string
+                        try:
+                            val = int(value)
+                        except Exception:
+                            try:
+                                val = float(value)
+                            except Exception:
+                                val = value.replace("_", " ")
+
+                kwargs[key] = val
+            except (ValueError, TypeError):
+                # skip invalid parameters (e.g., non-convertible numbers)
+                continue
+
+        # create instance, then set attributes and save
+        new_instance = cls()
+        for k, v in kwargs.items():
+            setattr(new_instance, k, v)
+        new_instance.save()
         print(new_instance.id)
 
     def help_create(self):

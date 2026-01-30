@@ -8,6 +8,12 @@ import sys
 from os import getenv
 from console import HBNBCommand
 from models.base_model import BaseModel
+from models.state import State
+from models.city import City
+from models.user import User
+from models.place import Place
+from models.amenity import Amenity
+from models.review import Review
 from models.__init__ import storage
 
 
@@ -54,6 +60,64 @@ class TestConsole(unittest.TestCase):
         # check if an id is printed (UUID length 36)
         self.assertEqual(len(output), 36)
 
+    def test_create_with_params(self):
+        """Test create with string parameter"""
+        self.console.onecmd('create State name="California"')
+        output = self.get_output()
+        self.assertEqual(len(output), 36)
+        key = "State." + output
+        obj = storage.all().get(key)
+        self.assertEqual(obj.name, "California")
+
+    def test_create_with_int_param(self):
+        """Test create with integer parameter"""
+        self.console.onecmd('create Place number_rooms=4')
+        output = self.get_output()
+        self.assertEqual(len(output), 36)
+        key = "Place." + output
+        obj = storage.all().get(key)
+        self.assertEqual(obj.number_rooms, 4)
+
+    def test_create_with_float_param(self):
+        """Test create with float parameter"""
+        self.console.onecmd('create Place latitude=37.773972')
+        output = self.get_output()
+        self.assertEqual(len(output), 36)
+        key = "Place." + output
+        obj = storage.all().get(key)
+        self.assertEqual(obj.latitude, 37.773972)
+
+    def test_create_with_multiple_params(self):
+        """Test create with multiple parameters"""
+        cmd = ('create Place city_id="0001" user_id="0001" '
+               'name="My_little_house" number_rooms=4 number_bathrooms=2 '
+               'max_guest=10 price_by_night=300 latitude=37.773972 '
+               'longitude=-122.431297')
+        self.console.onecmd(cmd)
+        output = self.get_output()
+        self.assertEqual(len(output), 36)
+        key = "Place." + output
+        obj = storage.all().get(key)
+        self.assertEqual(obj.name, "My little house")
+        self.assertEqual(obj.number_rooms, 4)
+        self.assertEqual(obj.number_bathrooms, 2)
+        self.assertEqual(obj.max_guest, 10)
+        self.assertEqual(obj.price_by_night, 300)
+        self.assertEqual(obj.latitude, 37.773972)
+        self.assertEqual(obj.longitude, -122.431297)
+
+    def test_create_skips_invalid_params(self):
+        """Test invalid params are skipped or handled correctly"""
+        # unquoted strings should be accepted as strings; invalid numeric params should be skipped
+        self.console.onecmd('create State name=California population=abc')
+        output = self.get_output()
+        self.assertEqual(len(output), 36)
+        key = "State." + output
+        obj = storage.all().get(key)
+        self.assertTrue(hasattr(obj, "name"))
+        self.assertEqual(obj.name, "California")
+        self.assertFalse(hasattr(obj, "population"))
+
     def test_show_missing_class(self):
         self.console.onecmd("show")
         output = self.get_output()
@@ -77,7 +141,6 @@ class TestConsole(unittest.TestCase):
     def test_all_command(self):
         self.console.onecmd("all")
         output = self.get_output()
-        # Should return a list (possibly empty)
         self.assertTrue(output.startswith('[') and output.endswith(']'))
 
     def test_count_command(self):
