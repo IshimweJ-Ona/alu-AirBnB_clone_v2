@@ -4,18 +4,23 @@ import unittest
 from models.base_model import BaseModel
 from models import storage
 import os
+try:
+    from models.engine.file_storage import FileStorage
+    _has_filestorage = True
+except Exception:
+    _has_filestorage = False
 
 
+@unittest.skipUnless(_has_filestorage and type(storage) is FileStorage,
+                     "FileStorage tests only")
 class test_fileStorage(unittest.TestCase):
     """ Class to test the file storage method """
 
     def setUp(self):
         """ Set up test environment """
-        del_list = []
-        for key in storage._FileStorage__objects.keys():
-            del_list.append(key)
+        del_list = list(storage.all().keys())
         for key in del_list:
-            del storage._FileStorage__objects[key]
+            del storage.all()[key]
 
     def tearDown(self):
         """ Remove storage file at end of tests """
@@ -70,11 +75,15 @@ class test_fileStorage(unittest.TestCase):
         self.assertEqual(new.to_dict()['id'], loaded.to_dict()['id'])
 
     def test_reload_empty(self):
-        """ Load from an empty file """
+        """ Load from an empty file (should not raise) """
+        # Ensure storage is empty first
+        for key in list(storage.all().keys()):
+            del storage.all()[key]
         with open('file.json', 'w') as f:
             pass
-        with self.assertRaises(ValueError):
-            storage.reload()
+        # Should not raise; reload should handle empty/invalid JSON gracefully
+        storage.reload()
+        self.assertEqual(storage.all(), {})
 
     def test_reload_from_nonexistent(self):
         """ Nothing happens if file does not exist """
@@ -88,7 +97,8 @@ class test_fileStorage(unittest.TestCase):
 
     def test_type_path(self):
         """ Confirm __file_path is string """
-        self.assertEqual(type(storage._FileStorage__file_path), str)
+        file_path = getattr(storage, '_FileStorage__file_path', None)
+        self.assertEqual(type(file_path), str)
 
     def test_type_objects(self):
         """ Confirm __objects is a dict """
