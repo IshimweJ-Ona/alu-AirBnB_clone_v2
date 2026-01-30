@@ -1,13 +1,14 @@
 #!/usr/bin/python3
-"""This module defines a base class for all models in our hbnb clone"""
+"""Base model for all HBNB models"""
 import uuid
 from datetime import datetime, timedelta
 
 
 class BaseModel:
-    """A base class for all hbnb models"""
+    """Defines common attributes/methods for all models"""
+
     def __init__(self, *args, **kwargs):
-        """Instatntiates a new model"""
+        """Instantiates a new model"""
         if not kwargs:
             from models import storage
             self.id = str(uuid.uuid4())
@@ -15,43 +16,34 @@ class BaseModel:
             self.updated_at = datetime.now() + timedelta(microseconds=1)
             storage.new(self)
         else:
-            # Validate that all keys are strings
             for key in kwargs.keys():
                 if not isinstance(key, str):
                     raise TypeError("keys must be strings")
-            
-            # Validate that required keys exist
             if 'created_at' not in kwargs or 'updated_at' not in kwargs:
                 raise KeyError("'created_at' and 'updated_at' are required")
-            
-            # Validate that id is a string if present
             if 'id' in kwargs and not isinstance(kwargs['id'], str):
                 raise TypeError("id must be a string")
-            
-            kwargs['updated_at'] = datetime.strptime(kwargs['updated_at'],
-                                                     '%Y-%m-%dT%H:%M:%S.%f')
-            kwargs['created_at'] = datetime.strptime(kwargs['created_at'],
-                                                     '%Y-%m-%dT%H:%M:%S.%f')
-            del kwargs['__class__']
+
+            kwargs['created_at'] = datetime.strptime(kwargs['created_at'], "%Y-%m-%dT%H:%M:%S.%f")
+            kwargs['updated_at'] = datetime.strptime(kwargs['updated_at'], "%Y-%m-%dT%H:%M:%S.%f")
+            kwargs.pop('__class__', None)
             self.__dict__.update(kwargs)
 
     def __str__(self):
-        """Returns a string representation of the instance"""
-        cls = (str(type(self)).split('.')[-1]).split('\'')[0]
-        return '[{}] ({}) {}'.format(cls, self.id, self.__dict__)
+        """String representation of the instance"""
+        cls_name = type(self).__name__
+        return "[{}] ({}) {}".format(cls_name, self.id, self.__dict__)
 
     def save(self):
-        """Updates updated_at with current time when instance is changed"""
+        """Updates updated_at and saves the instance to storage"""
         from models import storage
         self.updated_at = datetime.now()
         storage.save()
 
     def to_dict(self):
-        """Convert instance into dict format"""
-        dictionary = {}
-        dictionary.update(self.__dict__)
-        dictionary.update({'__class__':
-                          (str(type(self)).split('.')[-1]).split('\'')[0]})
-        dictionary['created_at'] = self.created_at.isoformat()
-        dictionary['updated_at'] = self.updated_at.isoformat()
+        """Returns a dictionary representation of the instance"""
+        dictionary = self.__dict__.copy()
+        dictionary["__class__"] = type(self).__name__
+        dictionary["created_at"] = self.created_at.isoformat()
+        dictionary["updated_at"] = self.updated_at.isoformat()
         return dictionary

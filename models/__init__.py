@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""This module instantiates the correct storage engine"""
+"""Instantiate the correct storage engine based on environment variable"""
 
 from os import getenv
 
