@@ -1,5 +1,6 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """ Console Module """
+
 import cmd
 import sys
 from models.base_model import BaseModel
