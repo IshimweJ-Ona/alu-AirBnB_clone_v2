@@ -5,3 +5,14 @@ venv/
 .venv/
 .env/
 instance/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+venv/
+.env
+*.egg-info/
+.pytest_cache/
+*.log

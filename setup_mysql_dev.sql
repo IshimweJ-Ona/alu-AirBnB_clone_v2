@@ -5,7 +5,7 @@
 CREATE DATABASE IF NOT EXISTS hbnb_dev_db;
 
 -- Create the user if it doesn't exist and set password
-CREATE USER IF NOT EXISTS 'hbnb_dev'@'localhost' IDENTIFIED BY 'hbnb_dev_pwd';
+CREATE USER IF NOT EXISTS 'hbnb_dev'@'localhost' IDENTIFIED WITH mysql_native_password BY 'hbnb_dev_pwd';
 
 -- Grant all privileges on hbnb_dev_db to hbnb_dev
 GRANT ALL PRIVILEGES ON hbnb_dev_db.* TO 'hbnb_dev'@'localhost';
