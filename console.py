@@ -144,10 +144,20 @@ class HBNBCommand(cmd.Cmd):
                 # skip invalid parameters (e.g., non-convertible numbers)
                 continue
 
+        #Enforce required attributes
+        if cls_name == "State" and "name" not in kwargs:
+            print("** name missing **")
+            return
+        if cls_name == "City":
+            if "name" not in kwargs:
+                print("** name missing **")
+                return
+            if "state_id" not in kwargs:
+                print("** state_id missing **")
+                return
+
         # create instance, then set attributes and save
-        new_instance = cls()
-        for k, v in kwargs.items():
-            setattr(new_instance, k, v)
+        new_instance = cls(**kwargs)
         new_instance.save()
         print(new_instance.id)
 
