@@ -1,15 +1,11 @@
 #!/usr/bin/python3
-"""User class for HBNB project using DB storage"""
-
-from sqlalchemy import Column, String
-from models.base_model import BaseModel, Base
+"""This module defines a class User"""
+from models.base_model import BaseModel
 
 
-class User(BaseModel, Base):
-    """User class inherits from BaseModel and Base"""
-    __tablename__ = "users"
-
-    email = Column(String(128), nullable=False)
-    password = Column(String(128), nullable=False)
-    first_name = Column(String(128), nullable=True)
-    last_name = Column(String(128), nullable=True)
+class User(BaseModel):
+    """This class defines a user by various attributes"""
+    email = ''
+    password = ''
+    first_name = ''
+    last_name = ''

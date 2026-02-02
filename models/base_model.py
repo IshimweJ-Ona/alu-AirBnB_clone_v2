@@ -1,53 +1,69 @@
 #!/usr/bin/python3
+"""Base model for HBNB models using SQLAlchemy"""
+
 import uuid
 from datetime import datetime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String, DateTime
-import models
+
 
 Base = declarative_base()
 
 class BaseModel:
-    """Base class for all models"""
-    
+    """Defines common attributes/methods for all models"""
+
     id = Column(String(60), primary_key=True, nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    
+
     def __init__(self, *args, **kwargs):
-        """Initialize a new BaseModel instance"""
-        if not kwargs:
+        from models import storage
+
+        if kwargs:
+            if "__class__" in kwargs:
+                kwargs.pop("__class__")
+
+            if "created_at" not in kwargs or "updated_at" not in kwargs:
+                raise KeyError("'created_at' and 'updated_at' are required")
+            
+            if "id" in kwargs and not isinstance(kwargs["id"], str):
+                raise TypeError("id must be a string")
+            
+            for key, value in kwargs.items():
+                if key in ["created_at", "updated_at"]:
+                    if not isinstance(value, str):
+                        raise TypeError(f"{key} must be a string")
+                    setattr(self, key, datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f"))
+                else:
+                    setattr(self, key, value)
+        else:
             self.id = str(uuid.uuid4())
             self.created_at = datetime.utcnow()
             self.updated_at = datetime.utcnow()
-        else:
-            for key, value in kwargs.items():
-                if key == 'created_at' or key == 'updated_at':
-                    setattr(self, key, datetime.fromisoformat(value))
-                elif key != '__class__':
-                    setattr(self, key, value)
-            if 'id' not in kwargs:
-                self.id = str(uuid.uuid4())
-            if 'created_at' not in kwargs:
-                self.created_at = datetime.utcnow()
-            if 'updated_at' not in kwargs:
-                self.updated_at = datetime.utcnow()
+            storage.new(self)
 
+    def __str__(self):
+        """String representation of the instance"""
+        cls_name = type(self).__name__
+        return "[{}] ({}) {}".format(cls_name, self.id, self.__dict__)
+    
     def save(self):
-        """Update updated_at and save to storage"""
+        """Updates updated_at and saves the instance to storage"""
+        from models import storage
         self.updated_at = datetime.utcnow()
-        models.storage.new(self)
-        models.storage.save()
+        storage.new(self)
+        storage.save()
 
     def delete(self):
         """Delete the current instance from storage"""
-        models.storage.delete(self)
+        from models import storage
+        storage.delete(self)
 
     def to_dict(self):
-        """Return a dictionary representation of the instance"""
-        d = self.__dict__.copy()
-        d['__class__'] = self.__class__.__name__
-        d['created_at'] = self.created_at.isoformat()
-        d['updated_at'] = self.updated_at.isoformat()
-        d.pop('_sa_instance_state', None)
-        return d
+        """Returns a dictionary representation of the instance"""
+        dictionary = self.__dict__.copy()
+        dictionary["__class__"] = type(self).__name__
+        dictionary["created_at"] = self.created_at.isoformat()
+        dictionary["updated_at"] = self.updated_at.isoformat()
+        dictionary.pop("_sa_instance_state", None)
+        return dictionary
