@@ -26,3 +26,13 @@ class Place(BaseModel, Base):
     user = relationship("User", back_populates="places")
     city = relationship("City", back_populates="places")
     reviews = relationship("Review", back_populates="place", cascade="all, delete, delete-orphan")
+
+    # File storage getter
+    @property
+    def reviews_fs(self):
+        """Return list of Review instances linked to this Place (FileStorage only)"""
+        from models import storage
+        from models.review import Review
+        all_reviews = storage.all(Review).values()
+        return [review for review in all_reviews if review.place_id == self.id]
+    
