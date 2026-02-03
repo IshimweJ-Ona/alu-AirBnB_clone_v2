@@ -39,6 +39,14 @@ class BaseModel:
             self.created_at = datetime.utcnow()
             self.updated_at = datetime.utcnow()
 
+    def __str__(self):
+        """String representation of the instance"""
+        return "[{}] ({}) {}".format(
+            self.__class__.__name__,
+            self.id,
+            self.to_dict()
+        )
+    
     def save(self):
         """Update update_at and save to storage"""
         from models import storage
