@@ -36,7 +36,7 @@ class FileStorage:
         if cls is None:
             return self.__objects
         # Filter objects by class
-        cls_name = cls.__name__ if isinstance(cls, type) else cls
+        cls_name = cls.__name__ if isinstance(cls, type) else cls.__name__
         filtered_objects = {k: v for k, v in self.__objects.items() if type(v).__name__ == cls_name}
         return filtered_objects
     
