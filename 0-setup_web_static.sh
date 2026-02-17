@@ -12,12 +12,15 @@ sudo mkdir -p /data/web_static/releases/test/
 sudo mkdir -p /data/web_static/shared/
 
 # Create fake html file
-echo "<html>
-  <head></head>
+cat > /data/web_static/releases/test/index.html <<EOF
+<html>
+  <head>
+  </head>
   <body>
-    Webstatic deployment
+    Holberton School
   </body>
-</html>" | sudo tee /data/web_static/releases/test/index.html > /dev/null
+</html>
+EOF
 
 # Remove existing symbolic link if it exists
 sudo rm -rf /data/web_static/current
